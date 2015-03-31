@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by dv on 30.03.15.
  */
 public class MultiOutputStream extends OutputStream {
     private List<OutputStream> streams;
+    public AtomicInteger count = new AtomicInteger(0);
 
     public MultiOutputStream(List<OutputStream> streams) {
         this.streams = streams;
@@ -55,6 +57,8 @@ public class MultiOutputStream extends OutputStream {
     }
 
     public synchronized void addStream(OutputStream stream){
-        this.streams.add(stream);
+        streams.add(stream);
+        count.incrementAndGet();
+
     }
 }

@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class RTSP_TO_HTTP {
-
-    public static final String MAIN_BIN_NAME = "RTSP_BIN";
     public static final String RTSP_SRC_NAME = "RTSP_SOURCE";
 
     public static final String DEFAULT_RTP_DEPAY_CLASS = "rtph264depay";
