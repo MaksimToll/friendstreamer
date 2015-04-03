@@ -11,15 +11,17 @@ import java.net.Socket;
  * Created by dv on 31.03.15.
  */
 public class ConnectionsBinder extends Thread {
+    private byte[] header;
     private MultiOutputStream outputStream;
     private ServerSocket serverSocket;
     private BufferedReader in = null;
     private PrintWriter out = null;
 
-    public ConnectionsBinder(MultiOutputStream outputStream, ServerSocket serverSocket) {
+    public ConnectionsBinder(MultiOutputStream outputStream, ServerSocket serverSocket, byte[] header) {
         super();
         this.outputStream = outputStream;
         this.serverSocket = serverSocket;
+        this.header = header;
     }
 
     @Override
@@ -30,6 +32,7 @@ public class ConnectionsBinder extends Thread {
                 init(client);
                 readHeader();
                 sendResponce();
+                sendHeader();
                 outputStream.addStream(client.getOutputStream());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -55,5 +58,9 @@ public class ConnectionsBinder extends Thread {
     private void sendResponce(){
         out.print("HTTP/1.1 200 OK\r\n\r\n");
         out.flush();
+    }
+
+    private void sendHeader() throws IOException {
+        outputStream.write(header);
     }
 }
