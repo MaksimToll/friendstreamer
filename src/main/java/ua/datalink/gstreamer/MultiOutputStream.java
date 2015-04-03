@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MultiOutputStream extends OutputStream {
     private List<OutputStream> streams;
-    public AtomicInteger count = new AtomicInteger(0);
+    public volatile AtomicInteger count = new AtomicInteger(0);
 
     public MultiOutputStream(List<OutputStream> streams) {
         this.streams = streams;
@@ -58,7 +58,7 @@ public class MultiOutputStream extends OutputStream {
 
     public synchronized void addStream(OutputStream stream){
         streams.add(stream);
-        count.incrementAndGet();
+        count.set(1);
 
     }
 }

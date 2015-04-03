@@ -17,9 +17,9 @@ public class RTSP_TO_HTTP {
 
     public static final String DEFAULT_DECODER_CLASS = "ffdec_h264";
     public static final String DECODER_NAME = "decoder";
-    public static final String DEFAULT_ENCODER_CLASS = "theoraenc";
+    public static final String DEFAULT_ENCODER_CLASS = "x264enc";
     public static final String ENCODER_NAME = "encoder";
-    public static final String DEFAULT_MUXER_CLASS = "oggmux";
+    public static final String DEFAULT_MUXER_CLASS = "flvmux";
     public static final String MUXER_NAME = "muxer";
 
     public static final int DEFAULT_PROTOCOL = 4;//TCP
@@ -157,7 +157,7 @@ public class RTSP_TO_HTTP {
             }
         });
 
-        if(! rtpDepay.link(decoder)){
+        /*if(! rtpDepay.link(decoder)){
             logger.error("Can't link RTPDepay to decoder");
             throw new RuntimeException();
         }
@@ -168,6 +168,11 @@ public class RTSP_TO_HTTP {
         }
 
         if(! encoder.link(muxer)){
+            logger.error("Can't link encoder to muxer");
+            throw new RuntimeException();
+        }*/
+
+        if(! rtpDepay.link(muxer)){
             logger.error("Can't link encoder to muxer");
             throw new RuntimeException();
         }

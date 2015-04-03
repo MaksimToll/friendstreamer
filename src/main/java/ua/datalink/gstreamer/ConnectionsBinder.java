@@ -53,7 +53,7 @@ public class ConnectionsBinder extends Thread {
     }
 
     private void sendResponce(){
-        out.println("HTTP/1.1 200 OK\n Content-Type: video/ogg\r\n\r\n");
+        out.print("HTTP/1.1 200 OK\r\n\r\n");
         out.flush();
     }
 }

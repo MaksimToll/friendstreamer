@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 
 /**
  * Created by dv on 31.03.15.
@@ -60,13 +62,11 @@ public class Server {
             InputStream reader = inSoket.getInputStream();
             while (true) {
                 for (int i = 0; i < 10; i++) {
-                    reader.read(tmpBuffer);
-                    byteBuffer.put(tmpBuffer);
-                    CharBuffer cb = byteBuffer.asCharBuffer();
+                    int c = reader.read(tmpBuffer, 0, 1024);
                     if(outputStream.count.get() > 0) {
-                        outputStream.write(tmpBuffer);
+                        outputStream.write(tmpBuffer, 0, c);
                     }
-                    System.out.println(tmpBuffer.toString());
+                    //System.out.println(tmpBuffer.toString());
                     byteBuffer.put(tmpBuffer);
                 }
                 byteBuffer.reset();
@@ -81,7 +81,7 @@ public class Server {
         Server server = new Server();
         server.connectDataSource();
         server.sendRequest();
-        //server.readResponse();
+        server.readResponse();
         server.readData();
     }
 }

@@ -74,8 +74,8 @@ public class MediaSocketListener implements Runnable{
         }
 
         private void sendResponce(){
-            out.println("HTTP/1.1 200 OK\\r\\n \\r\\n");
-            //out.flush();
+            out.print("HTTP/1.1 200 OK\r\n\r\n");
+            out.flush();
         }
 
 
