@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer;
+package ua.datalink.gstreamer.server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import java.net.Socket;
  * Created by dv on 31.03.15.
  */
 public class ConnectionsBinder extends Thread {
+    Socket client;
     private byte[] header;
     private MultiOutputStream outputStream;
     private ServerSocket serverSocket;
@@ -41,6 +42,7 @@ public class ConnectionsBinder extends Thread {
     }
 
     private void init(Socket client) throws IOException {
+        this.client = client;
         in = new BufferedReader(new InputStreamReader(client.getInputStream()));
         out = new PrintWriter(client.getOutputStream(), true);
     }
@@ -61,6 +63,7 @@ public class ConnectionsBinder extends Thread {
     }
 
     private void sendHeader() throws IOException {
-        outputStream.write(header);
+        client.getOutputStream().write(header);
+        client.getOutputStream().flush();
     }
 }

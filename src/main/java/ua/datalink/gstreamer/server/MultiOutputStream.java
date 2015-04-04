@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer;
+package ua.datalink.gstreamer.server;
 
 import java.io.IOException;
 import java.io.OutputStream;

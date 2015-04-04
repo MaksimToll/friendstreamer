@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer;
+package ua.datalink.gstreamer.streamer;
 
 
 import org.apache.log4j.Logger;
@@ -123,7 +123,7 @@ public class RTSP_TO_HTTP {
         });
 
         try {
-            rtspSource = ElementFactory.make("videotestsrc", "test");//new RTSPSrc(RTSP_SRC_NAME);
+            rtspSource = new RTSPSrc(RTSP_SRC_NAME);
             rtpDepay = ElementFactory.make(DEFAULT_RTP_DEPAY_CLASS, RTP_DEPAY_NAME);
             decoder = ElementFactory.make(DEFAULT_DECODER_CLASS, DECODER_NAME);
             encoder = ElementFactory.make(DEFAULT_ENCODER_CLASS, ENCODER_NAME);
@@ -131,9 +131,9 @@ public class RTSP_TO_HTTP {
             pipeline.addMany(rtspSource, rtpDepay, decoder, encoder, muxer);
 
 
-            rtspSource.set("is-live", true);
-//            rtspSource.set("location", sourceLocation);
-//            rtspSource.set("protocols", protocol);
+
+            rtspSource.set("location", sourceLocation);
+            rtspSource.set("protocols", protocol);
         }catch (IllegalArgumentException iae){
             logger.error("Can't create pipeline elements. " + iae.getMessage() + ". Maybe some GStreamer plugin not installed");
             throw iae;
@@ -149,7 +149,7 @@ public class RTSP_TO_HTTP {
         //Adding handler for onPAD_ADDED
         //RTSP source has no PADs on creating, its adding on open rtsp nd read metadata
         //so we can't connect source with nex pipeline element before
-        /*rtspSource.connect(new Element.PAD_ADDED() {
+        rtspSource.connect(new Element.PAD_ADDED() {
             @Override
             public void padAdded(Element element, Pad pad) {
                 if(! element.link(rtpDepay)){
@@ -157,14 +157,14 @@ public class RTSP_TO_HTTP {
                     throw new RuntimeException();
                 }
             }
-        });*/
+        });
 
-        /*if(! rtpDepay.link(decoder)){
+        if(! rtpDepay.link(muxer)){
             logger.error("Can't link RTPDepay to decoder");
             throw new RuntimeException();
-        }*/
+        }
 
-        if(! rtspSource.link(encoder)){
+     /*   if(! decoder.link(encoder)){
             logger.error("Can't link decoder to encoder");
             throw new RuntimeException();
         }
@@ -172,7 +172,7 @@ public class RTSP_TO_HTTP {
         if(! encoder.link(muxer)){
             logger.error("Can't link encoder to muxer");
             throw new RuntimeException();
-        }
+        }*/
 
     }
 
@@ -190,7 +190,7 @@ public class RTSP_TO_HTTP {
         }
     }
 
-    private class ConnectHandler implements ConnectionInterface{
+    private class ConnectHandler implements ConnectionInterface {
 
         private int connectionsCount = 0;
 

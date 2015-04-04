@@ -1,6 +1,7 @@
 package ua.datalink.gstreamer;
 
 import org.junit.Test;
+import ua.datalink.gstreamer.server.Server;
 
 import static junit.framework.Assert.assertEquals;
 

@@ -1,12 +1,9 @@
-package ua.datalink.gstreamer;
+package ua.datalink.gstreamer.server;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 
 /**
  * Created by dv on 31.03.15.
@@ -65,6 +62,11 @@ public class Server {
         try {
             while (true) {
                 byte[] tag = readNexTag(stream);
+               // System.out.println(tag[11] + " - " + tag[12] + " - " + tag[13]);
+                tag[4] = 0;
+                tag[5] = 0;
+                tag[6] = 0;
+                tag[7] = 0;
                 if(outputStream.count.get() > 0 &&getTagType(tag) == TagType.VIDEO){
                     outputStream.write(tag);
                 }
@@ -170,16 +172,13 @@ public class Server {
         byte[] header = readHeader(stream);
         fullHeader.put(header);
         count += header.length;
-        TagType tagType = TagType.SCRIPT_DATA;
-        while (tagType == TagType.SCRIPT_DATA) {
-            byte[] tag = readNexTag(stream);
-            tagType = getTagType(tag);
-            if(tagType == TagType.SCRIPT_DATA){
-                fullHeader.put(tag);
-                count += tag.length;
-            }
-        }
+        byte[] tag = readNexTag(stream);
+        fullHeader.put(tag);
+        count += tag.length;
+        tag = readNexTag(stream);
+        fullHeader.put(tag);
         fullHeader.reset();
+        count += tag.length;
         this.header = new byte[count];
         fullHeader.get(this.header, 0, count);
     }
@@ -188,10 +187,4 @@ public class Server {
         Server server = new Server();
         server.readData();
     }
-}
-
-enum TagType{
-    AUDIO,
-    VIDEO,
-    SCRIPT_DATA
 }
