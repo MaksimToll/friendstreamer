@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
+import static ua.datalink.gstreamer.utils.stream.StreamUtil.readFullBuffer;
+
 /**
  * Created by dv on 31.03.15.
  */
@@ -98,7 +100,7 @@ public class Server {
     }
 
     private int readTagSize(InputStream stream, byte[] buffer) throws IOException {
-        readAllBytes(stream, buffer, 3);
+        readFullBuffer(stream, buffer, 3);
         return sizeBufferToInt(buffer);
     }
 
@@ -119,7 +121,7 @@ public class Server {
         tagBuffer[1] = tagSizeBuffer[0];
         tagBuffer[2] = tagSizeBuffer[1];
         tagBuffer[3] = tagSizeBuffer[2];
-        readAllBytes(stream, tagBuffer, 4, tagSize+11);
+        readFullBuffer(stream, tagBuffer, 4, tagSize+11);
         return tagBuffer;
     }
     /**
@@ -130,30 +132,8 @@ public class Server {
      */
     private byte[] readHeader(InputStream stream) throws IOException {
         byte[] header = new byte[13];
-        readAllBytes(stream, header, 13);
+        readFullBuffer(stream, header, 13);
         return header;
-    }
-
-    /**
-     * @param stream from where read data
-     * @param buffer to where write data
-     * @param length of data that must be read
-     * @throws IOException
-     */
-    public static void readAllBytes(InputStream stream, byte[] buffer, int length) throws IOException {
-        readAllBytes(stream, buffer, 0, length);
-    }
-
-    public static void readAllBytes(InputStream stream, byte[] buffer,int offset, int length) throws IOException {
-        int totalCount = 0;
-        int lastLength = length;
-        int pos = offset;
-        do {
-            int count = stream.read(buffer, pos, lastLength);
-            pos += count;
-            lastLength -= count;
-            totalCount += count;
-        }while (totalCount != length);
     }
 
     public static TagType getTagType(byte[] tagBuffer){
