@@ -2,6 +2,7 @@ package ua.datalink.gstreamer;
 
 import org.junit.Test;
 import ua.datalink.gstreamer.server.Server;
+import ua.datalink.gstreamer.utils.FLV.FLVUtil;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -21,6 +22,6 @@ public class StreamUtilsTest {
         buffer[0] = 0;
         buffer[1] = 9;
         buffer[2] = -44;
-        assertEquals(2516, Server.sizeBufferToInt(buffer));
+        assertEquals(2516, FLVUtil.sizeBufferToInt(buffer));
     }
 }

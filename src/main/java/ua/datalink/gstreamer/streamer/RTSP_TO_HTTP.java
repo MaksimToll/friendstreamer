@@ -14,11 +14,6 @@ public class RTSP_TO_HTTP {
 
     public static final String DEFAULT_RTP_DEPAY_CLASS = "rtph264depay";
     public static final String RTP_DEPAY_NAME = "RTP_DEPAY";
-
-    public static final String DEFAULT_DECODER_CLASS = "ffdec_h264";
-    public static final String DECODER_NAME = "decoder";
-    public static final String DEFAULT_ENCODER_CLASS = "x264enc";
-    public static final String ENCODER_NAME = "encoder";
     public static final String DEFAULT_MUXER_CLASS = "flvmux";
     public static final String MUXER_NAME = "muxer";
 
@@ -34,8 +29,6 @@ public class RTSP_TO_HTTP {
     private Pipeline pipeline;
     private Element rtspSource;
     private org.gstreamer.Element rtpDepay;
-    private org.gstreamer.Element decoder;
-    private Element encoder;
     private Element muxer;
     OutputStreamSink outputStreamSink;
 
@@ -56,29 +49,6 @@ public class RTSP_TO_HTTP {
         this.port = port;
     }
 
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public int getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(int protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getSourceLocation() {
-        return sourceLocation;
-    }
-
-    public void setSourceLocation(String sourceLocation) {
-        this.sourceLocation = sourceLocation;
-    }
 
     public boolean init(){
         if(sourceLocation == null){
@@ -96,7 +66,6 @@ public class RTSP_TO_HTTP {
 
         return false;
     }
-
 
     /**
      * Creating base pipeline elements
@@ -125,15 +94,13 @@ public class RTSP_TO_HTTP {
         try {
             rtspSource = new RTSPSrc(RTSP_SRC_NAME);
             rtpDepay = ElementFactory.make(DEFAULT_RTP_DEPAY_CLASS, RTP_DEPAY_NAME);
-            decoder = ElementFactory.make(DEFAULT_DECODER_CLASS, DECODER_NAME);
-            encoder = ElementFactory.make(DEFAULT_ENCODER_CLASS, ENCODER_NAME);
             muxer = ElementFactory.make(DEFAULT_MUXER_CLASS, MUXER_NAME);
-            pipeline.addMany(rtspSource, rtpDepay, decoder, encoder, muxer);
-
-
+            pipeline.addMany(rtspSource, rtpDepay, muxer);
 
             rtspSource.set("location", sourceLocation);
             rtspSource.set("protocols", protocol);
+
+            muxer.set("streamable", true);
         }catch (IllegalArgumentException iae){
             logger.error("Can't create pipeline elements. " + iae.getMessage() + ". Maybe some GStreamer plugin not installed");
             throw iae;
@@ -147,8 +114,8 @@ public class RTSP_TO_HTTP {
         logger.debug("Linking elements in pipeline");
 
         //Adding handler for onPAD_ADDED
-        //RTSP source has no PADs on creating, its adding on open rtsp nd read metadata
-        //so we can't connect source with nex pipeline element before
+        //RTSP source has no PADs on creating, its adding on open rtsp and read metadata
+        //so we can't connect source with next pipeline element before
         rtspSource.connect(new Element.PAD_ADDED() {
             @Override
             public void padAdded(Element element, Pad pad) {
@@ -163,17 +130,6 @@ public class RTSP_TO_HTTP {
             logger.error("Can't link RTPDepay to decoder");
             throw new RuntimeException();
         }
-
-     /*   if(! decoder.link(encoder)){
-            logger.error("Can't link decoder to encoder");
-            throw new RuntimeException();
-        }
-
-        if(! encoder.link(muxer)){
-            logger.error("Can't link encoder to muxer");
-            throw new RuntimeException();
-        }*/
-
     }
 
     public void listenPort(){
@@ -191,30 +147,24 @@ public class RTSP_TO_HTTP {
     }
 
     private class ConnectHandler implements ConnectionInterface {
-
-        private int connectionsCount = 0;
-
         @Override
         public void onConnect(OutputStream out) {
-            if(! pipeline.getSinks().contains(outputStreamSink)){
-                outputStreamSink = new OutputStreamSink(out, "OutputVideoStream");
-                pipeline.add(outputStreamSink);
+            outputStreamSink = new OutputStreamSink(out, "OutputVideoStream");
+            pipeline.add(outputStreamSink);
 
-                if(! muxer.link(outputStreamSink)){
-                    logger.error("Can't connect muxer to outputStream");
-                    throw new RuntimeException();
-                }
+            if(! muxer.link(outputStreamSink)){
+                logger.error("Can't connect muxer to outputStream");
+                throw new RuntimeException();
             }
-            if(connectionsCount++ == 0){
-                pipeline.play();
+            logger.info("Start streaming to client.");
+            pipeline.play();
+            while (!Thread.interrupted()){
+                Thread.yield();
             }
         }
 
         @Override
         public void onDisconnect() {
-            if(--connectionsCount == 0){
-                pipeline.stop();
-            }
         }
     }
     }

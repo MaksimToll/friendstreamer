@@ -1,6 +1,7 @@
 package ua.datalink.gstreamer.streamer;
 
 
+import org.apache.log4j.Logger;
 import ua.datalink.gstreamer.server.MultiOutputStream;
 
 import java.io.*;
@@ -10,29 +11,27 @@ import java.net.Socket;
 public class MediaSocketListener implements Runnable{
     private ServerSocket serverSocket = null;
     private ConnectionInterface connectionInterface;
-    private MultiOutputStream outputStream;
-    private ConnectionProcessor connectionProcessor;
+    private OutputStream outputStream;
+    private static final Logger logger = Logger.getLogger(MediaSocketListener.class);
 
     public MediaSocketListener(int port, ConnectionInterface connectionInterface) throws IOException {
         if(port < 0 || port > 65535){
             throw new IllegalArgumentException("Port can be in range 0..65535");
         }
         this.connectionInterface = connectionInterface;
-        outputStream = new MultiOutputStream();
         serverSocket = new ServerSocket(port);
 
     }
 
     @Override
     public void run() {
-        while (true){
-            Socket client = null;
-            try {
-                client = serverSocket.accept();
-                new Thread(new ConnectionProcessor(connectionInterface, client)).start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        Socket client = null;
+        try {
+            client = serverSocket.accept();
+            new Thread(new ConnectionProcessor(connectionInterface, client)).start();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            logger.debug(e.getMessage(), e);
         }
     }
 
@@ -46,15 +45,6 @@ public class MediaSocketListener implements Runnable{
         public ConnectionProcessor(ConnectionInterface callback, Socket client) {
             this.connectCallback = callback;
             this.client = client;
-        }
-
-        public void newConnection(ConnectionInterface callback, Socket client) throws IOException {
-            connectCallback = callback;
-            init(client);
-            readHeader();
-            sendResponce();
-            outputStream.addStream(client.getOutputStream());
-            connectCallback.onConnect(outputStream);
         }
 
         private void init(Socket client) throws IOException {
@@ -76,17 +66,18 @@ public class MediaSocketListener implements Runnable{
             out.flush();
         }
 
-
         @Override
         public void run() {
             try {
+                logger.info("Client " + client.getInetAddress() + " connected");
                 init(client);
                 readHeader();
                 sendResponce();
-                outputStream.addStream(client.getOutputStream());
+                outputStream = client.getOutputStream();
                 connectCallback.onConnect(outputStream);
             }catch (Exception e){
-                e.printStackTrace();
+                logger.error(e.getMessage());
+                logger.debug(e.getMessage(), e);
             }
 
         }

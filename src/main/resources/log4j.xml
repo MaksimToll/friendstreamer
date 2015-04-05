@@ -12,7 +12,7 @@
 
     <!-- Services logs -->
     <logger name="ua.datalink.gstreamer">
-        <level value="trace"/>
+        <level value="debug"/>
         <appender-ref ref="console"/>
     </logger>
 

@@ -5,3 +5,12 @@
 **/target
 */*.iml
 out
+lib
+share
+bin
+etc
+include
+libexec
+*.dll
+*.exe
+index.html~

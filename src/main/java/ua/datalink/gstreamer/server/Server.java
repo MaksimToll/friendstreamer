@@ -1,30 +1,30 @@
 package ua.datalink.gstreamer.server;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import static ua.datalink.gstreamer.utils.stream.StreamUtil.readFullBuffer;
+import static ua.datalink.gstreamer.utils.FLV.FLVUtil.*;
 
 /**
  * Created by dv on 31.03.15.
  */
 public class Server {
     private ServerSocket serverSocket;
-    private Socket inSoket;
-    private InputStream stream;
-    private MultiOutputStream outputStream = new MultiOutputStream();
-    private ByteBuffer headerBuffer;
+    private Socket streamSocket;
+    private InputStream mediaStream;
+    private MultiOutputStream outputStream = new ua.datalink.gstreamer.server.MultiOutputStream();
     private byte[] header;
+
+    Logger logger = Logger.getLogger(Server.class);
 
     public Server(){
         try {
-            serverSocket = new ServerSocket(6666);
-            connectDataSource();
-            sendRequest();
-            readResponse();
-            stream = inSoket.getInputStream();
+            serverSocket = new ServerSocket(11111);
+            connectDataSource("localhost", 4322);
             prepareHeader();
             new ConnectionsBinder(outputStream, serverSocket, header).start();
         } catch (IOException e) {
@@ -32,139 +32,85 @@ public class Server {
         }
     }
 
-    public void connectDataSource(){
+    public void start(){
         try {
-            inSoket = new Socket("localhost", 4322);
+            logger.info("Start receiving stream data.");
+            while (true) {
+                byte[] tag = readNexTag(mediaStream);
+                //resetTimestamp(tag);
+                if(outputStream.count.get() > 0){
+                    outputStream.write(tag);
+                }
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
+            logger.debug(e);
         }
     }
 
-    private void sendRequest(){
+    /**
+     * Connect to mediaStreamSource on specified hast and port
+     * @param host
+     * @param port
+     */
+    private void connectDataSource(String host, int port){
         try {
-            PrintWriter writer = new PrintWriter(inSoket.getOutputStream());
+            logger.info("Try to connect to stream source");
+            streamSocket = new Socket(host, port);
+            mediaStream = streamSocket.getInputStream();
+            sendRequest();
+            readResponse();
+        } catch (IOException e) {
+            logger.error("Error occurred during connecting");
+            logger.debug(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Send request to data source
+     * todo make request more specific(many streams on one port)
+     */
+    private void sendRequest() throws IOException {
+            PrintWriter writer = new PrintWriter(streamSocket.getOutputStream());
             writer.println("GET");
             writer.println("");
             writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
-    private void readResponse(){
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inSoket.getInputStream()));
+    /**
+     * Read response from data source
+     * todo process diferent response
+     */
+    private void readResponse() throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(streamSocket.getInputStream()));
             System.out.println(reader.readLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void readData(){
-        try {
-            while (true) {
-                byte[] tag = readNexTag(stream);
-               // System.out.println(tag[11] + " - " + tag[12] + " - " + tag[13]);
-                tag[4] = 0;
-                tag[5] = 0;
-                tag[6] = 0;
-                tag[7] = 0;
-                if(outputStream.count.get() > 0 &&getTagType(tag) == TagType.VIDEO){
-                    outputStream.write(tag);
-                }
-
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public byte[] getHeader() {
-        return header;
-    }
-
-    /**
-     * Read tag type for even tag
-     * @param stream
-     * @return
-     * @throws IOException
-     */
-    private byte readTagType(InputStream stream) throws IOException {
-        byte[] tagType = new byte[1];
-        int count = 0;
-        do{
-            count = stream.read(tagType, 0, 1);
-        }while (count != 1);
-        return tagType[0];
-    }
-
-    private int readTagSize(InputStream stream, byte[] buffer) throws IOException {
-        readFullBuffer(stream, buffer, 3);
-        return sizeBufferToInt(buffer);
-    }
-
-    public static int sizeBufferToInt(byte[] buffer){
-        ByteBuffer byteBuffer = ByteBuffer.allocate(4);
-        byteBuffer.put((byte)0);
-        byteBuffer.put(buffer);
-        return byteBuffer.getInt(0);
-    }
-
-    private byte[] readNexTag(InputStream stream) throws IOException {
-        byte[] tagTypeBuffer = new byte[1];
-        tagTypeBuffer[0] = readTagType(stream);
-        byte[] tagSizeBuffer = new byte[3];
-        int tagSize = readTagSize(stream, tagSizeBuffer);
-        byte[] tagBuffer = new byte[tagSize + 4 + 11];
-        tagBuffer[0] = tagTypeBuffer[0];
-        tagBuffer[1] = tagSizeBuffer[0];
-        tagBuffer[2] = tagSizeBuffer[1];
-        tagBuffer[3] = tagSizeBuffer[2];
-        readFullBuffer(stream, tagBuffer, 4, tagSize+11);
-        return tagBuffer;
-    }
-    /**
-     *
-     * @param stream
-     * @return next tag type
-     * @throws IOException
-     */
-    private byte[] readHeader(InputStream stream) throws IOException {
-        byte[] header = new byte[13];
-        readFullBuffer(stream, header, 13);
-        return header;
-    }
-
-    public static TagType getTagType(byte[] tagBuffer){
-        switch (tagBuffer[0]){
-            case 8 : return TagType.AUDIO;
-            case 9 : return TagType.VIDEO;
-            case 18: return TagType.SCRIPT_DATA;
-            default: throw new RuntimeException("Unknown tag type.");
-        }
     }
 
     private void prepareHeader() throws IOException {
-        ByteBuffer fullHeader = ByteBuffer.allocate(10240);
+        logger.info("Preparing data header");
+        logger.debug("Reading stream header..");
+        ByteBuffer fullHeader = ByteBuffer.allocate(200240);
         fullHeader.mark();
         int count = 0;
-        byte[] header = readHeader(stream);
+
+        byte[] header = readFLVStreamHeader(mediaStream);
         fullHeader.put(header);
         count += header.length;
-        byte[] tag = readNexTag(stream);
+
+        logger.debug("Reading script data...");
+        byte[] tag = readNexTag(mediaStream);
         fullHeader.put(tag);
         count += tag.length;
-        tag = readNexTag(stream);
+
+        logger.debug("Reading first(with metadata) video tag...");
+        tag = readNexTag(mediaStream);
         fullHeader.put(tag);
+        count += tag.length;
+
         fullHeader.reset();
-        count += tag.length;
         this.header = new byte[count];
         fullHeader.get(this.header, 0, count);
+        logger.debug("Full header was prepared.");
     }
 
-    public static void main(String[] args) {
-        Server server = new Server();
-        server.readData();
-    }
 }

@@ -1,5 +1,6 @@
 package ua.datalink.gstreamer;
 
+import ua.datalink.gstreamer.server.Server;
 import ua.datalink.gstreamer.streamer.RTSP_TO_HTTP;
 
 /**
@@ -10,5 +11,7 @@ public class Main {
         RTSP_TO_HTTP media = new RTSP_TO_HTTP("rtsp://109.95.48.77:1218/user=admin&password=2117&channel=1&stream=1.sdp");
         media.init();
         media.listenPort(4322);
+        Server server = new Server();
+        server.start();
     }
 }

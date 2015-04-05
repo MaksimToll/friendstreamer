@@ -1,5 +1,7 @@
 package ua.datalink.gstreamer.server;
 
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,6 +19,7 @@ public class ConnectionsBinder extends Thread {
     private ServerSocket serverSocket;
     private BufferedReader in = null;
     private PrintWriter out = null;
+    private static final Logger logger = Logger.getLogger(ConnectionsBinder.class);
 
     public ConnectionsBinder(MultiOutputStream outputStream, ServerSocket serverSocket, byte[] header) {
         super();
@@ -45,6 +48,7 @@ public class ConnectionsBinder extends Thread {
         this.client = client;
         in = new BufferedReader(new InputStreamReader(client.getInputStream()));
         out = new PrintWriter(client.getOutputStream(), true);
+        logger.info("New client connected : " + client.getInetAddress() + ":" + client.getPort());
     }
 
     private void readHeader() throws IOException {
@@ -54,7 +58,6 @@ public class ConnectionsBinder extends Thread {
             line = in.readLine();
             builder.append(line);
         }
-        System.out.println(builder.toString());
     }
 
     private void sendResponce(){
