@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.utils.FLV.exceptions;
+package ua.friendstreamer.utils.FLV.exceptions;
 
 /**
  * Created by dv on 04.04.15.

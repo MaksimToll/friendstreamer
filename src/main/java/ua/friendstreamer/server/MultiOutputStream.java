@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.server;
+package ua.friendstreamer.server;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +31,7 @@ public class MultiOutputStream extends OutputStream {
             }catch (IOException ioe){
                 streams.remove(i);
                 count.decrementAndGet();
-                logger.info("Client disconnected!");
+                logger.info("Client disconnected! Actual clients count " + count.get());
             }
 
         }

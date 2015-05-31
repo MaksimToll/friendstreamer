@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.utils.stream;
+package ua.friendstreamer.utils.stream;
 
 import java.io.IOException;
 import java.io.InputStream;

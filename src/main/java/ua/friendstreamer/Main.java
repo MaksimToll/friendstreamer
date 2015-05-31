@@ -1,7 +1,7 @@
-package ua.datalink.gstreamer;
+package ua.friendstreamer;
 
-import ua.datalink.gstreamer.server.Server;
-import ua.datalink.gstreamer.streamer.RTSP_TO_HTTP;
+import ua.friendstreamer.server.Server;
+import ua.friendstreamer.streamer.RTSP_TO_HTTP;
 
 /**
  * Created by dv on 31.03.15.

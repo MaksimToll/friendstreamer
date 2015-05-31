@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.streamer;
+package ua.friendstreamer.streamer;
 
 
 import java.io.OutputStream;

@@ -1,8 +1,7 @@
 package ua.datalink.gstreamer;
 
 import org.junit.Test;
-import ua.datalink.gstreamer.server.Server;
-import ua.datalink.gstreamer.utils.FLV.FLVUtil;
+import ua.friendstreamer.utils.FLV.FLVUtil;
 
 import static junit.framework.Assert.assertEquals;
 

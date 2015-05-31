@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.server;
+package ua.friendstreamer.server;
 
 import org.apache.log4j.Logger;
 

@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.utils.FLV;
+package ua.friendstreamer.utils.FLV;
 
 /**
  * Describe type of FLV tag

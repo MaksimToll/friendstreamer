@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.streamer;
+package ua.friendstreamer.streamer;
 
 
 import org.apache.log4j.Logger;
@@ -159,7 +159,12 @@ public class RTSP_TO_HTTP {
             logger.info("Start streaming to client.");
             pipeline.play();
             while (!Thread.interrupted()){
-                Thread.yield();
+                try {
+                    Thread.sleep(100000000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
+
             }
         }
 

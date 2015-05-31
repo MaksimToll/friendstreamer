@@ -1,8 +1,7 @@
-package ua.datalink.gstreamer.streamer;
+package ua.friendstreamer.streamer;
 
 
 import org.apache.log4j.Logger;
-import ua.datalink.gstreamer.server.MultiOutputStream;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -52,6 +51,7 @@ public class MediaSocketListener implements Runnable{
             out = new PrintWriter(client.getOutputStream(), true);
         }
 
+        //todo process headers
         private void readHeader() throws IOException {
             StringBuilder builder = new StringBuilder();
             String line = " ";
@@ -61,7 +61,7 @@ public class MediaSocketListener implements Runnable{
             }
         }
 
-        private void sendResponce(){
+        private void sendResponse(){
             out.print("HTTP/1.1 200 OK\r\n\r\n");
             out.flush();
         }
@@ -72,7 +72,7 @@ public class MediaSocketListener implements Runnable{
                 logger.info("Client " + client.getInetAddress() + " connected");
                 init(client);
                 readHeader();
-                sendResponce();
+                sendResponse();
                 outputStream = client.getOutputStream();
                 connectCallback.onConnect(outputStream);
             }catch (Exception e){

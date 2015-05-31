@@ -1,14 +1,13 @@
-package ua.datalink.gstreamer.utils.FLV;
+package ua.friendstreamer.utils.FLV;
 
-import ua.datalink.gstreamer.utils.FLV.exceptions.FLVUnknownTagTypeException;
-import ua.datalink.gstreamer.utils.FLV.exceptions.FLVWrongControlSize;
+import ua.friendstreamer.utils.FLV.exceptions.FLVUnknownTagTypeException;
+import ua.friendstreamer.utils.FLV.exceptions.FLVWrongControlSize;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import static ua.datalink.gstreamer.utils.FLV.TagType.*;
-import static ua.datalink.gstreamer.utils.stream.StreamUtil.readFullBuffer;
+import static ua.friendstreamer.utils.stream.StreamUtil.readFullBuffer;
 
 /**
  * Created by dv on 04.04.15.
@@ -73,9 +72,9 @@ public class FLVUtil {
      */
     public static TagType getTagType(byte[] tagBuffer){
         switch (tagBuffer[0]){
-            case 8 : return AUDIO;
-            case 9 : return VIDEO;
-            case 18: return SCRIPT_DATA;
+            case 8 : return TagType.AUDIO;
+            case 9 : return TagType.VIDEO;
+            case 18: return TagType.SCRIPT_DATA;
             default: throw new FLVUnknownTagTypeException();
         }
     }

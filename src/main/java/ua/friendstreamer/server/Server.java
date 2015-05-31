@@ -1,13 +1,12 @@
-package ua.datalink.gstreamer.server;
+package ua.friendstreamer.server;
 
 import org.apache.log4j.Logger;
+import ua.friendstreamer.utils.FLV.FLVUtil;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-
-import static ua.datalink.gstreamer.utils.FLV.FLVUtil.*;
 
 /**
  * Created by dv on 31.03.15.
@@ -16,7 +15,7 @@ public class Server {
     private ServerSocket serverSocket;
     private Socket streamSocket;
     private InputStream mediaStream;
-    private MultiOutputStream outputStream = new ua.datalink.gstreamer.server.MultiOutputStream();
+    private MultiOutputStream outputStream = new MultiOutputStream();
     private byte[] header;
 
     Logger logger = Logger.getLogger(Server.class);
@@ -36,11 +35,9 @@ public class Server {
         try {
             logger.info("Start receiving stream data.");
             while (true) {
-                byte[] tag = readNexTag(mediaStream);
-                //resetTimestamp(tag);
-                if(outputStream.count.get() > 0){
-                    outputStream.write(tag);
-                }
+                byte[] tag = FLVUtil.readNexTag(mediaStream);
+                outputStream.write(tag);
+                Thread.yield();
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -93,17 +90,17 @@ public class Server {
         fullHeader.mark();
         int count = 0;
 
-        byte[] header = readFLVStreamHeader(mediaStream);
+        byte[] header = FLVUtil.readFLVStreamHeader(mediaStream);
         fullHeader.put(header);
         count += header.length;
 
         logger.debug("Reading script data...");
-        byte[] tag = readNexTag(mediaStream);
+        byte[] tag = FLVUtil.readNexTag(mediaStream);
         fullHeader.put(tag);
         count += tag.length;
 
         logger.debug("Reading first(with metadata) video tag...");
-        tag = readNexTag(mediaStream);
+        tag = FLVUtil.readNexTag(mediaStream);
         fullHeader.put(tag);
         count += tag.length;
 

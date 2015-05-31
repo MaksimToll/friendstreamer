@@ -1,4 +1,4 @@
-package ua.datalink.gstreamer.utils.FLV.exceptions;
+package ua.friendstreamer.utils.FLV.exceptions;
 
 /**
  * Represent bad FLV data
